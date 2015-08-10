@@ -1,0 +1,69 @@
+module AI.HANN.FeedForward.Network
+    (
+    -- * Types
+      NeuralNetwork
+    , Parameters(..)
+    , LearningRateStrategy(..)
+
+    -- * Activation functions and derivatives
+    , sigmoid
+    , sigmoid'
+    ) where
+
+import Numeric.LinearAlgebra.HMatrix (Matrix)
+
+-- |Core type of the library, describes a neural network's architecture
+data NeuralNetwork = NeuralNetwork {
+    -- ^Describes the internal architecture.
+    -- [I,H1,H2,O] describes a 4-layered neural network with:
+    -- I input units
+    -- H1 neurons in the first hidden layer
+    -- H2 neurons in the second hidden layer
+    -- O output neurons
+      nnStructure :: [Int]
+
+    -- ^The neural network's weights
+    -- Note that bias neurons are automatically added
+    , nnWeights :: [WeightMatrix]
+
+    , nnActivation :: Double -> Double
+    , nnActivationDeriv :: Double -> Double
+}
+
+-- |Just a type synonym to make signatures more readable
+type WeightMatrix = [Matrix Double]
+
+-- |Regroups all parameters for the network
+data Parameters = Parameters {
+      pLearningRateStrategy :: LearningRateStrategy -- ^ Specifies the strategy used to update the learning rate
+    , pBackpropStrategy :: BackpropStrategy
+    , pCostFunction :: CostFunction
+} deriving (Show, Eq)
+
+-- |The strategy to use for
+data LearningRateStrategy =
+    FixedRate Double
+    deriving (Show, Eq)
+
+-- |Specifies the strategy used for Gradient Descent
+data BackpropStrategy =
+    -- ^Accumulates error & computes gradient on all training cases before updating weights
+      BatchGradientDescent
+
+    -- ^Accumulates error & computes gradient on N training cases, then perform weight update and carry on
+    | MiniBatchGradientDescent Int
+
+    -- ^Computes error & gradient and performs weight update after each training case
+    | OnlineGradientDescent
+    deriving (Show, Eq)
+
+-- |Specifies
+
+-- |The sigmoid activation function
+sigmoid :: Double -> Double
+sigmoid x = 1 / (1 + exp(-x))
+
+-- |The derivatives of the sigmoid activation function, expressed in terms of the sigmoid function
+sigmoid' :: Double -> Double
+sigmoid' x = s * (1 - s)
+    where s = sigmoid x
