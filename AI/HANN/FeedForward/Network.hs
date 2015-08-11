@@ -28,15 +28,19 @@ module AI.HANN.FeedForward.Network
     -- * Activation functions and derivatives
     , sigmoid
     , sigmoid'
+
+    -- * Running the neural network
+    , runNN
     ) where
 
 import           Control.Monad                   (forM, replicateM)
 import           Control.Monad.Primitive         (PrimMonad, PrimState)
-import           Numeric.LinearAlgebra.HMatrix   (Matrix, Vector, (><), vector)
+import           Numeric.LinearAlgebra.HMatrix   (Matrix, Vector, (><), vector, (#>), cmap)
 import           System.Random.MWC               (Gen, asGenST,
                                                   withSystemRandom)
 import           System.Random.MWC.Distributions (normal, standard)
 import Data.Default
+import Data.List (foldl')
 
 -- |Core type of the library, describes a neural network's architecture
 data NeuralNetwork = NeuralNetwork {
@@ -176,3 +180,10 @@ mkNeuralNetwork initStrat h h' struct = do
               Basic      -> standard -- standard generate a mean 0 and variance 1
               Normalized -> normal 0 (1 / sqrt (fromIntegral n1))
               _          -> error "mkNeuralNetwork (distrib): unsupported InitStrategy"
+
+-- |Runs the Neural Network on the input to get the output
+runNN :: NeuralNetwork -> Vector Double -> Vector Double
+runNN nn input = foldl' (\a (w,b) -> cmap σ (w #> a + b)) input (zip weights biases)
+    where weights = nnWeights nn
+          biases  = nnBiases nn
+          σ       = nnActivation nn
