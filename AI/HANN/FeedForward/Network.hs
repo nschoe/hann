@@ -32,7 +32,7 @@ module AI.HANN.FeedForward.Network
 
 import           Control.Monad                   (forM, replicateM)
 import           Control.Monad.Primitive         (PrimMonad, PrimState)
-import           Numeric.LinearAlgebra.HMatrix   (Matrix, Vector, (><))
+import           Numeric.LinearAlgebra.HMatrix   (Matrix, Vector, (><), vector)
 import           System.Random.MWC               (Gen, asGenST,
                                                   withSystemRandom)
 import           System.Random.MWC.Distributions (normal, standard)
@@ -78,7 +78,7 @@ getActivationDeriv = nnActivationDeriv
 -- |Just type synonyms to make signatures more readable
 type Structure               = [Int]
 type WeightMatrix            = Matrix Double
-type Bias                    = Matrix Double
+type Bias                    = Vector Double
 type ActivationFunction      = Double -> Double
 type ActivationFunctionDeriv = Double -> Double
 
@@ -158,13 +158,16 @@ mkNeuralNetwork _ _ _ struct | length struct < 2 = error "A neural network must 
 mkNeuralNetwork NguyenWidrow _ _ _ =
     error "The Nguyen-Widrow random weight initialization method is not yet implemented, either use basic or normalized"
 mkNeuralNetwork initStrat h h' struct = do
-    basicWeights <- forM (zip struct (tail struct)) $ \(n1, n2) -> do
+    weights <- forM (zip struct (tail struct)) $ \(n1, n2) -> do
         randomNumbers <- withSystemRandom . asGenST $ \gen -> replicateM (n1*n2) (distrib n1 gen)
         return $ (n2><n1) randomNumbers
+    biases <- forM struct $ \n -> do
+        randomNumbers <- withSystemRandom . asGenST $ \gen -> replicateM n (standard gen)
+        return (vector randomNumbers)
     return NeuralNetwork {
           nnStructure = struct
-        , nnWeights = basicWeights
-        , nnBiases = []
+        , nnWeights = weights
+        , nnBiases = biases
         , nnActivation = h
         , nnActivationDeriv = h'
     }
