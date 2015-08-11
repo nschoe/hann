@@ -165,7 +165,7 @@ mkNeuralNetwork initStrat h h' struct = do
     weights <- forM (zip struct (tail struct)) $ \(n1, n2) -> do
         randomNumbers <- withSystemRandom . asGenST $ \gen -> replicateM (n1*n2) (distrib n1 gen)
         return $ (n2><n1) randomNumbers
-    biases <- forM struct $ \n -> do
+    biases <- forM (tail struct) $ \n -> do
         randomNumbers <- withSystemRandom . asGenST $ \gen -> replicateM n (standard gen)
         return (vector randomNumbers)
     return NeuralNetwork {
