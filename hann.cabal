@@ -25,6 +25,7 @@ library
                      , mwc-random
                      , primitive
                      , data-default
-  ghc-options:         -O2 -Wall -Werror
+                     , split
+  -- ghc-options:         -O2 -Wall -Werror
   -- hs-source-dirs:
   default-language:    Haskell2010
