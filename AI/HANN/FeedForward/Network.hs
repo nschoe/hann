@@ -46,15 +46,19 @@ module AI.HANN.FeedForward.Network
 
 import           Control.Monad                   (forM, replicateM)
 import           Control.Monad.Primitive         (PrimMonad, PrimState)
-import           Numeric.LinearAlgebra.HMatrix   (Matrix, Vector, (><), vector, (#>), cmap, tr, scale, asColumn, asRow, (<>), (|>), size, sumElements)
+import           Data.Default
+import           Data.List                       (foldl', scanl')
+import           Data.List.Split                 (chunksOf)
+import           Debug.Trace                     (trace)
+import           Numeric.LinearAlgebra.HMatrix   (Matrix, Vector, asColumn,
+                                                  asRow, cmap, scale, size,
+                                                  sumElements, tr, vector,
+                                                  ( #> ), (<>), (><), (|>))
+import           System.IO                       (BufferMode (..),
+                                                  hSetBuffering, stdout)
 import           System.Random.MWC               (Gen, asGenST,
                                                   withSystemRandom)
 import           System.Random.MWC.Distributions (normal, standard)
-import Data.Default
-import Data.List (foldl', scanl')
-import Data.List.Split (chunksOf)
-import Debug.Trace (trace)
-import System.IO (hSetBuffering, stdout, BufferMode(..))
 
 -- |Core type of the library, describes a neural network's architecture
 data NeuralNetwork = NeuralNetwork {
